@@ -20,7 +20,7 @@ function Result({selectedTypes, currentPage, setCurrentPage, accessToken, refres
         //     setAccessToken(res.headers['auth-token-access'])
         //     config.headers['Authorization'] = `Bearer ${res.headers['auth-token-access']}`
         // }
-        console.log(config)
+        // console.log(config)
         return config;
     }, (error) => {
             return Promise.reject(error);
@@ -35,12 +35,6 @@ function Result({selectedTypes, currentPage, setCurrentPage, accessToken, refres
     useEffect(() => {
         async function fetchData() {
             const response = await axiosJWT.get("https://raw.githubusercontent.com/fanzeyi/pokemon.json/master/pokedex.json")
-            // const response = await axiosJWT.get("http://localhost:3000/api/v1/pokemons", {
-            //     headers: {
-            //         "Authorization": `Bearer ${accessToken}`,
-            //         "user": user.username
-            //     }
-            // })
             setPokemon(response.data)
         }
         fetchData()

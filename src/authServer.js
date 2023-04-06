@@ -1,6 +1,7 @@
 const express = require("express");
 const userModel = require("./models/user.js");
-const refreshTokenModel = require("./models/refreshToken");
+const refreshTokenModel = require("./models/refreshToken.js");
+const AccessTimes = require("./models/accessTimes.js")
 const cors = require("cors");
 const mongoose = require('mongoose');
 const bcrypt = require("bcrypt");
@@ -27,9 +28,16 @@ app.post('/register', async (req, res) => {
         const { username, password } = req.body;
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        const userWithHashedPassword = { ...req.body, password: hashedPassword };
-    
+        const userWithHashedPassword = { username: username, password: hashedPassword };
         const user = await userModel.create(userWithHashedPassword);
+
+        const existingAccessTime = await AccessTimes.findOne({"username": username})
+        if(existingAccessTime == null) {
+            await AccessTimes.insertMany({"username": username, "lastAccess": new Date()})
+        } else {
+            await AccessTimes.updateOne({"username": username}, {"lastAccess": new Date()})
+        }
+
         return res.status(201).json({"user": user});
     } catch(err) {
         return res.status(500).json({"message": "An error occured.", "error": err})
@@ -88,6 +96,15 @@ app.post('/login', async (req, res) => {
 
     res.header('auth-token-access', accessToken)
     res.header('auth-token-refresh', refreshToken)
+
+    const existingAccessTime = await AccessTimes.findOne({"username": user.username})
+    if(existingAccessTime == null) {
+        console.log("Creating new entry")
+        await AccessTimes.insertMany({"username": username, "lastAccess": new Date()})
+    } else {
+        console.log("Updating existing entry")
+        await AccessTimes.updateOne({"username": username}, {"lastAccess": new Date()})
+    }
 
     return res.status(200).json({"user": user})
 })
