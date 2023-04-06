@@ -1,0 +1,15 @@
+.btnActive {
+    color: white;
+    background-color: green;
+}
+
+.pokemonList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center
+}
+
+.pokemonList img {
+    height: 100px;
+    width: 100px
+}
