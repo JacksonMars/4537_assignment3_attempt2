@@ -12,7 +12,7 @@ function Dashboard({ accessToken, setAccessToken, refreshToken, setViewPokemon }
         const decodedToken = jwt_decode(accessToken);
         console.log(decodedToken)
         if (decodedToken.exp <= Date.now() / 1000) {
-            const res = await axios.get('http://localhost:5000/requestNewAccessToken', {
+            const res = await axios.get('http://localhost:3001/requestNewAccessToken', {
                 headers: {
                     'Authorization': `Refresh ${refreshToken}`
                 }

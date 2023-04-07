@@ -12,7 +12,7 @@ function Result({selectedTypes, setSelectedTypes, currentPage, setCurrentPage, a
     axiosJWT.interceptors.request.use(async (config) => {
         const decodedToken = jwt_decode(accessToken);
         if (decodedToken.exp <= Date.now() / 1000) {
-            const res = await axios.get('http://localhost:5000/requestNewAccessToken', {
+            const res = await axios.get('http://localhost:3001/requestNewAccessToken', {
                 headers: {
                     'Authorization': `Refresh ${refreshToken}`
                 }
@@ -84,7 +84,7 @@ function Result({selectedTypes, setSelectedTypes, currentPage, setCurrentPage, a
                 })
             }
 
-            <Page currentPokemon={allCurrentPokemon} currentPage={currentPage} setSelectedPokemon={setSelectedPokemon} setCurrentImage={setCurrentImage} user={user} />
+            <Page currentPokemon={allCurrentPokemon} currentPage={currentPage} setSelectedPokemon={setSelectedPokemon} setCurrentImage={setCurrentImage} user={user} accessToken={accessToken} setAccessToken={setAccessToken} refreshToken={refreshToken} />
             <Pagination numberOfPages={numberOfPages} currentPage={currentPage} setCurrentPage={setCurrentPage} />
 
             {

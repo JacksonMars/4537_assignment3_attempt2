@@ -7,12 +7,15 @@ const EndpointAccess = require("./models/endpointAccess")
 const Error = require("./models/Error")
 const jwt_decode = require("jwt-decode");
 const jwt = require("jsonwebtoken");
+const userModel = require("./models/user.js");
+const refreshTokenModel = require("./models/refreshToken.js");
+const bcrypt = require("bcrypt");
 
 const app = express();
 
 app.use(express.json());
 app.use(morgan(":method"));
-app.use(cors({exposedHeaders: ['Authorization']}));
+app.use(cors({exposedHeaders: ['Authorization', 'auth-token-access', 'auth-token-refresh']}));
 
 app.listen(3001, async () => {
     console.log("Server started on port 3001")
@@ -54,6 +57,96 @@ const authAdmin = async (req, res, next) => {
 
     return res.status(403).json({"error": "Access denied."});
 }
+
+app.post('/register', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        const userWithHashedPassword = { username: username, password: hashedPassword };
+        const user = await userModel.create(userWithHashedPassword);
+
+        const existingAccessTime = await AccessTimes.findOne({"username": username})
+        if(existingAccessTime == null) {
+            await AccessTimes.insertMany({"username": username, "lastAccess": new Date()})
+        } else {
+            await AccessTimes.updateOne({"username": username}, {"lastAccess": new Date()})
+        }
+
+        return res.status(201).json({"user": user});
+    } catch(err) {
+        return res.status(500).json({"message": "An error occured.", "error": err})
+    }
+});
+
+app.get('/requestNewAccessToken', async (req, res) => {
+    const header = req.header('Authorization')
+    if(!header) {
+        return res.status(400).json({"error": "No token found in header."});
+    }
+    
+    const token = req.header('Authorization').split(" ")
+    if(token[0] != "Refresh" || token.length != 2) {
+        return res.status(400).json({"message": "a refresh token needs to be provided in the request header."})
+    }
+
+    const refreshToken = token[1];
+    const foundToken = await refreshTokenModel.findOne({"token": refreshToken});
+
+    if (!foundToken) {
+        return res.status(400).json({"message": "the provided refresh token could not be found."})
+    }
+
+    try {
+        const payload = await jwt.verify(refreshToken, "assignmentrefresh")
+        const accessToken = jwt.sign({ user: payload.user }, "assignmentaccess", { expiresIn: '10s' })
+        res.header('auth-token-access', accessToken)
+        return res.status(201).json({"message": "new token created"})
+    } catch (error) {
+        return res.status(400).json({"message": "invalid refresh token."})
+    }
+});
+
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body
+
+    if (!password || !username) {
+        return res.status(400).json({"message": "please provide a username and password."})
+    }
+
+    const user = await userModel.findOne({ username })
+    if (!user) {
+        return res.status(404).json({"message": "username not found."})
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password)
+    if (!isPasswordCorrect) {
+        return res.status(400).json({"message": "incorrect password."})
+    }
+
+    const accessToken = jwt.sign({ user: user }, "assignmentaccess", { expiresIn: '10s' })
+    const refreshToken = jwt.sign({ user: user }, "assignmentrefresh")
+    await refreshTokenModel.deleteMany({"username": username});
+    await refreshTokenModel.create({"token": refreshToken, "username": username});
+
+    res.header('auth-token-access', accessToken)
+    res.header('auth-token-refresh', refreshToken)
+
+    const existingAccessTime = await AccessTimes.findOne({"username": user.username})
+    if(existingAccessTime == null) {
+        await AccessTimes.insertMany({"username": username, "lastAccess": new Date()})
+    } else {
+        await AccessTimes.updateOne({"username": username}, {"lastAccess": new Date()})
+    }
+
+    return res.status(200).json({"user": user})
+})
+
+app.post('/logout', async(req, res) => {
+    const { username } = req.body
+    await refreshTokenModel.deleteMany({"username": username});
+    return res.status(200).json({"message": "Logged out."})
+})
 
 app.use(authUser)
 
