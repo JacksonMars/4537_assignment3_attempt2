@@ -1,7 +1,8 @@
 import React from 'react'
 import { useEffect } from 'react'
+import axios from 'axios'
 
-function Page({currentPokemon, currentPage, setCurrentImage, setSelectedPokemon}) {
+function Page({currentPokemon, currentPage, setCurrentImage, setSelectedPokemon, user}) {
     useEffect(() => {
         console.log("Setting up page")
     }, [currentPokemon])
@@ -12,9 +13,13 @@ function Page({currentPokemon, currentPage, setCurrentImage, setSelectedPokemon}
         return id
     }
 
-    const changeImage = (id) => {
+    const changeImage = async (id) => {
         setCurrentImage(`https://raw.githubusercontent.com/fanzeyi/pokemon.json/master/images/${getId(id)}.png`)
         setSelectedPokemon(id)
+        await axios.post("http://localhost:3001/recordEndpointAccess", {
+            "username": user.username,
+            "endpoint": "Get pokemon details"
+        })
     }
 
     return (

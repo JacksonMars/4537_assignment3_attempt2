@@ -6,7 +6,7 @@ import Pagination from "./Pagination";
 import PokemonDetails from "./PokemonDetails";
 import jwt_decode from "jwt-decode";
 
-function Result({selectedTypes, currentPage, setCurrentPage, accessToken, refreshToken, setAccessToken, setRefreshToken, user}) {
+function Result({selectedTypes, setSelectedTypes, currentPage, setCurrentPage, accessToken, refreshToken, setAccessToken, setRefreshToken, user, setViewPokemon}) {
     const axiosJWT = axios.create()
 
     axiosJWT.interceptors.request.use(async (config) => {
@@ -49,6 +49,13 @@ function Result({selectedTypes, currentPage, setCurrentPage, accessToken, refres
     return (
         <div>
             {
+                (user.role === "admin") &&
+                <button onClick={() => {
+                    setViewPokemon(false)
+                    setSelectedTypes([])
+                }}>View Admin Dashboard</button>
+            }
+            {
                 pokemon.map(poke => {
                     if(selectedTypes.length === 0 || selectedTypes.length > 2) {
                         lastIndex = 0
@@ -71,7 +78,7 @@ function Result({selectedTypes, currentPage, setCurrentPage, accessToken, refres
                 })
             }
 
-            <Page currentPokemon={allCurrentPokemon} currentPage={currentPage} setSelectedPokemon={setSelectedPokemon} setCurrentImage={setCurrentImage} />
+            <Page currentPokemon={allCurrentPokemon} currentPage={currentPage} setSelectedPokemon={setSelectedPokemon} setCurrentImage={setCurrentImage} user={user} />
             <Pagination numberOfPages={numberOfPages} currentPage={currentPage} setCurrentPage={setCurrentPage} />
 
             {
