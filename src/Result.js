@@ -11,7 +11,7 @@ function Result({selectedTypes, setSelectedTypes, currentPage, setCurrentPage, a
 
     axiosJWT.interceptors.request.use(async (config) => {
         const decodedToken = jwt_decode(accessToken);
-        if (decodedToken.exp < Date.now() / 1000) {
+        if (decodedToken.exp <= Date.now() / 1000) {
             const res = await axios.get('http://localhost:5000/requestNewAccessToken', {
                 headers: {
                     'Authorization': `Refresh ${refreshToken}`
@@ -38,6 +38,7 @@ function Result({selectedTypes, setSelectedTypes, currentPage, setCurrentPage, a
             setPokemon(response.data)
 
             await axios.post("http://localhost:3001/recordEndpointAccess", {
+                "Authorization": `Bearer ${accessToken}`,
                 "username": user.username,
                 "endpoint": "Get all pokemon"
             })

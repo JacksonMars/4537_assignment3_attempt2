@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const AccessTimes = require("./models/accessTimes")
 const EndpointAccess = require("./models/endpointAccess")
 const Error = require("./models/Error")
+const jwt_decode = require("jwt-decode");
+const jwt = require("jsonwebtoken");
 
 const app = express();
 
@@ -17,6 +19,44 @@ app.listen(3001, async () => {
     await mongoose.connect('mongodb+srv://dbUser:dbUser1@cluster0.ha92a.mongodb.net/pokemon');
 })
 
+const authUser = async (req, res, next) => {
+    let header = req.body['Authorization']
+    if(header === undefined) {
+        header = req.header("Authorization")
+    }
+
+    if(!header) {
+        return res.status(400).json({"error": "No token found in header."});
+    }
+
+    const token = header.split(" ")
+    if(token[0] != "Bearer" || token.length != 2) {
+        return res.status(400).json({"message": "an access token needs to be provided in the request header."})
+    }
+    
+    const accessToken = token[1];
+    try {
+        const verified = jwt.verify(accessToken, "assignmentaccess");
+        next();
+    } catch(err) {
+        return res.status(400).json({"error": "Invalid token."});
+    }
+    
+}
+
+const authAdmin = async (req, res, next) => {
+    const token = req.header('Authorization').split(" ")[1]
+    const payload = jwt.verify(token, "assignmentaccess");
+
+    if (payload?.user?.role == "admin") {
+        return next();
+    }
+
+    return res.status(403).json({"error": "Access denied."});
+}
+
+app.use(authUser)
+
 app.post("/recordEndpointAccess", async (req, res) => {
     try {
         await EndpointAccess.insertMany({"username": req.body.username, "time": new Date(), "endpoint": req.body.endpoint})
@@ -26,6 +66,8 @@ app.post("/recordEndpointAccess", async (req, res) => {
         return res.status(500).json({"error": error})
     }
 })
+
+app.use(authAdmin)
 
 app.get("/getUniqueUsers", async (req, res) => {
     const today = new Date()

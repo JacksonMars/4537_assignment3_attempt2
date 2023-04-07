@@ -56,20 +56,20 @@ app.get('/requestNewAccessToken', async (req, res) => {
     }
 
     const refreshToken = token[1];
-    refreshTokenModel.findOne({"token": refreshToken}, async (err, token) => {
-        if (!token) {
-            return res.status(400).json({"message": "the provided refresh token could not be found."})
-        }
+    const foundToken = await refreshTokenModel.findOne({"token": refreshToken});
 
-        try {
-            const payload = await jwt.verify(refreshToken, "assignmentrefresh")
-            const accessToken = jwt.sign({ user: payload.user }, "assignmentaccess", { expiresIn: '10s' })
-            res.header('auth-token-access', accessToken)
-            return res.status(201).json({"message": "new token created"})
-        } catch (error) {
-            return res.status(400).json({"message": "invalid refresh token."})
-        }
-    });
+    if (!foundToken) {
+        return res.status(400).json({"message": "the provided refresh token could not be found."})
+    }
+
+    try {
+        const payload = await jwt.verify(refreshToken, "assignmentrefresh")
+        const accessToken = jwt.sign({ user: payload.user }, "assignmentaccess", { expiresIn: '10s' })
+        res.header('auth-token-access', accessToken)
+        return res.status(201).json({"message": "new token created"})
+    } catch (error) {
+        return res.status(400).json({"message": "invalid refresh token."})
+    }
 });
 
 app.post('/login', async (req, res) => {
