@@ -99,10 +99,8 @@ app.post('/login', async (req, res) => {
 
     const existingAccessTime = await AccessTimes.findOne({"username": user.username})
     if(existingAccessTime == null) {
-        console.log("Creating new entry")
         await AccessTimes.insertMany({"username": username, "lastAccess": new Date()})
     } else {
-        console.log("Updating existing entry")
         await AccessTimes.updateOne({"username": username}, {"lastAccess": new Date()})
     }
 

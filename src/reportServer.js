@@ -4,6 +4,7 @@ const cors = require("cors");
 const mongoose = require('mongoose');
 const AccessTimes = require("./models/accessTimes")
 const EndpointAccess = require("./models/endpointAccess")
+const Error = require("./models/Error")
 
 const app = express();
 
@@ -17,7 +18,13 @@ app.listen(3001, async () => {
 })
 
 app.post("/recordEndpointAccess", async (req, res) => {
-    await EndpointAccess.insertMany({"username": req.body.username, "time": new Date(), "endpoint": req.body.endpoint})
+    try {
+        await EndpointAccess.insertMany({"username": req.body.username, "time": new Date(), "endpoint": req.body.endpoint})
+        return res.status(200).json({"status": "OK"})
+    } catch(error) {
+        await Error.insertMany({"error": error._message, "time": new Date(), "endpoint": req.body.endpoint})
+        return res.status(500).json({"error": error})
+    }
 })
 
 app.get("/getUniqueUsers", async (req, res) => {
@@ -84,4 +91,30 @@ app.get("/topUsersByEndpoint", async (req, res) => {
     }
 
     return res.status(200).json({"getAll": {"username": recentUsers[highIndexGetAll].username, "count": currentHighGetAll}, "getDetails": {"username": recentUsers[highIndexGetOne].username, "count": currentHighGetOne}})
+})
+
+app.get("/errorsByEndpoint", async (req, res) => {
+    const today = new Date()
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    let allErrors = await Error.find({"time": {"$gte": yesterday, "$lte": today}})
+    let getAllErrors = ""
+    let getDetailErrors = ""
+
+    for(let i = 0; i < allErrors.length; i++) {
+        if(allErrors[i].endpoint === "Get all pokemon") {
+            getAllErrors = getAllErrors + "Endpoint: " + allErrors[i].endpoint + ", time: " + allErrors[i].time + ", error: " + allErrors[i].error + ", "
+        } else {
+            getDetailErrors = getDetailErrors + "Endpoint: " + allErrors[i].endpoint + ", time: " + allErrors[i].time + ", error: " + allErrors[i].error + ", "
+        }
+
+        if(getAllErrors === "") {
+            getAllErrors = "No recent errors"
+        }
+        if(getDetailErrors === "") {
+            getDetailErrors = "No recent errors"
+        }
+    }
+
+    return res.status(200).json({"getAll": getAllErrors, "getDetails": getDetailErrors})
 })

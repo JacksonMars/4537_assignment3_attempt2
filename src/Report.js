@@ -8,7 +8,6 @@ function Report({id, accessToken, setAccessToken, refreshToken}) {
     const axiosJWT = axios.create()
 
     axiosJWT.interceptors.request.use(async (config) => {
-        console.log("Hello there")
         const decodedToken = jwt_decode(accessToken);
         if (decodedToken.exp < Date.now() / 1000) {
             const res = await axios.get('http://localhost:5000/requestNewAccessToken', {

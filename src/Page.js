@@ -3,9 +3,9 @@ import { useEffect } from 'react'
 import axios from 'axios'
 
 function Page({currentPokemon, currentPage, setCurrentImage, setSelectedPokemon, user}) {
-    useEffect(() => {
-        console.log("Setting up page")
-    }, [currentPokemon])
+    // useEffect(() => {
+    //     console.log("Setting up page")
+    // }, [currentPokemon])
 
     const getId = (id) => {
         if (id < 10) return `00${id}`

@@ -10,17 +10,17 @@ function Result({selectedTypes, setSelectedTypes, currentPage, setCurrentPage, a
     const axiosJWT = axios.create()
 
     axiosJWT.interceptors.request.use(async (config) => {
-        // const decodedToken = jwt_decode(accessToken);
-        // if (decodedToken.exp < Date.now() / 1000) {
-        //     const res = await axios.get('http://localhost:5000/requestNewAccessToken', {
-        //         headers: {
-        //             'Authorization': `Refresh ${refreshToken}`
-        //         }
-        //     })
-        //     setAccessToken(res.headers['auth-token-access'])
-        //     config.headers['Authorization'] = `Bearer ${res.headers['auth-token-access']}`
-        // }
-        // console.log(config)
+        const decodedToken = jwt_decode(accessToken);
+        if (decodedToken.exp < Date.now() / 1000) {
+            const res = await axios.get('http://localhost:5000/requestNewAccessToken', {
+                headers: {
+                    'Authorization': `Refresh ${refreshToken}`
+                }
+            })
+            setAccessToken(res.headers['auth-token-access'])
+            config.headers['Authorization'] = `Bearer ${res.headers['auth-token-access']}`
+        }
+        console.log(config)
         return config;
     }, (error) => {
             return Promise.reject(error);
