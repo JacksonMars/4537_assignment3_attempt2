@@ -36,6 +36,11 @@ function Result({selectedTypes, setSelectedTypes, currentPage, setCurrentPage, a
         async function fetchData() {
             const response = await axiosJWT.get("https://raw.githubusercontent.com/fanzeyi/pokemon.json/master/pokedex.json")
             setPokemon(response.data)
+
+            await axios.post("http://localhost:3001/recordEndpointAccess", {
+                "username": user.username,
+                "endpoint": "Get all pokemon"
+            })
         }
         fetchData()
     }, [])

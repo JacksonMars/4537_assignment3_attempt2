@@ -31,3 +31,22 @@ app.get("/getUniqueUsers", async (req, res) => {
     }
     return res.status(200).json({"count": times.length})
 })
+
+app.get("/topUsers", async (req, res) => {
+    const today = new Date()
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    const recentUsers = await AccessTimes.find({"lastAccess": {"$gte": yesterday, "$lte": today}})
+    
+    let highIndex = -1
+    let currentHigh = -1
+    for(let i = 0; i < recentUsers.length; i++) {
+        let recentAccesses = await EndpointAccess.find({"username": recentUsers[i].username})
+        if(recentAccesses.length > currentHigh) {
+            currentHigh = recentAccesses.length
+            highIndex = i
+        }
+    }
+
+    return res.status(200).json({"username": recentUsers[highIndex].username, "count": currentHigh})
+})
