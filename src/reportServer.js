@@ -50,3 +50,38 @@ app.get("/topUsers", async (req, res) => {
 
     return res.status(200).json({"username": recentUsers[highIndex].username, "count": currentHigh})
 })
+
+app.get("/topUsersByEndpoint", async (req, res) => {
+    const today = new Date()
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    const recentUsers = await AccessTimes.find({"lastAccess": {"$gte": yesterday, "$lte": today}})
+
+    let highIndexGetAll = -1
+    let currentHighGetAll = -1
+    for(let i = 0; i < recentUsers.length; i++) {
+        const result = await EndpointAccess.aggregate([
+            {$match: {"username": recentUsers[i].username, "endpoint": "Get all pokemon", "time": {"$gte": yesterday, "$lte": today}}}
+        ]).exec()
+
+        if(result.length > currentHighGetAll) {
+            currentHighGetAll = result.length
+            highIndexGetAll = i
+        }
+    }
+
+    let highIndexGetOne = -1
+    let currentHighGetOne = -1
+    for(let i = 0; i < recentUsers.length; i++) {
+        const result = await EndpointAccess.aggregate([
+            {$match: {"username": recentUsers[i].username, "endpoint": "Get pokemon details", "time": {"$gte": yesterday, "$lte": today}}}
+        ]).exec()
+
+        if(result.length > currentHighGetOne) {
+            currentHighGetOne = result.length
+            highIndexGetOne = i
+        }
+    }
+
+    return res.status(200).json({"getAll": {"username": recentUsers[highIndexGetAll].username, "count": currentHighGetAll}, "getDetails": {"username": recentUsers[highIndexGetOne].username, "count": currentHighGetOne}})
+})
