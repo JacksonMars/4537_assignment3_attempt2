@@ -24,10 +24,11 @@ function Login({user, setUser, refreshToken, setRefreshToken, accessToken, setAc
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post("https://assignment3-backend.onrender.com/register", { username, password });
-            setAccessToken(res.headers["auth-token-access"]);
-            setRefreshToken(res.headers["auth-token-refresh"]);
-            setUser(res.data.user);
+            const registerResponse = await axios.post("https://assignment3-backend.onrender.com/register", { username, password });
+            const loginResponse = await axios.post("https://assignment3-backend.onrender.com/login", { username, password });
+            setAccessToken(loginResponse.headers["auth-token-access"]);
+            setRefreshToken(loginResponse.headers["auth-token-refresh"]);
+            setUser(registerResponse.data.user);
         } catch (err) {
             console.log(err);
         }
