@@ -12,7 +12,7 @@ function Result({selectedTypes, setSelectedTypes, currentPage, setCurrentPage, a
     axiosJWT.interceptors.request.use(async (config) => {
         const decodedToken = jwt_decode(accessToken);
         if (decodedToken.exp <= Date.now() / 1000) {
-            const res = await axios.get('http://localhost:3001/requestNewAccessToken', {
+            const res = await axios.get('https://assignment3-backend.onrender.com/requestNewAccessToken', {
                 headers: {
                     'Authorization': `Refresh ${refreshToken}`
                 }
@@ -37,7 +37,7 @@ function Result({selectedTypes, setSelectedTypes, currentPage, setCurrentPage, a
             const response = await axiosJWT.get("https://raw.githubusercontent.com/fanzeyi/pokemon.json/master/pokedex.json")
             setPokemon(response.data)
 
-            await axios.post("http://localhost:3001/recordEndpointAccess", {
+            await axios.post("https://assignment3-backend.onrender.com/recordEndpointAccess", {
                 "Authorization": `Bearer ${accessToken}`,
                 "username": user.username,
                 "endpoint": "Get all pokemon"

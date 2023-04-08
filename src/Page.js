@@ -9,7 +9,7 @@ function Page({currentPokemon, currentPage, setCurrentImage, setSelectedPokemon,
     axiosJWT.interceptors.request.use(async (config) => {
         const decodedToken = jwt_decode(accessToken);
         if (decodedToken.exp <= Date.now() / 1000) {
-            const res = await axios.get('http://localhost:3001/requestNewAccessToken', {
+            const res = await axios.get('https://assignment3-backend.onrender.com/requestNewAccessToken', {
                 headers: {
                     'Authorization': `Refresh ${refreshToken}`
                 }
@@ -32,7 +32,7 @@ function Page({currentPokemon, currentPage, setCurrentImage, setSelectedPokemon,
     const changeImage = async (id) => {
         setCurrentImage(`https://raw.githubusercontent.com/fanzeyi/pokemon.json/master/images/${getId(id)}.png`)
         setSelectedPokemon(id)
-        await axiosJWT.post("http://localhost:3001/recordEndpointAccess", {
+        await axiosJWT.post("https://assignment3-backend.onrender.com/recordEndpointAccess", {
             "Authorization": `Bearer ${accessToken}`,
             "username": user.username,
             "endpoint": "Get pokemon details"

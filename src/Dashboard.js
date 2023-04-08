@@ -1,6 +1,4 @@
 import React from "react";
-import Report from "./Report";
-import { Routes, Route, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import jwt_decode from "jwt-decode";
@@ -12,7 +10,7 @@ function Dashboard({ accessToken, setAccessToken, refreshToken, setViewPokemon }
         const decodedToken = jwt_decode(accessToken);
         console.log(decodedToken)
         if (decodedToken.exp <= Date.now() / 1000) {
-            const res = await axios.get('http://localhost:3001/requestNewAccessToken', {
+            const res = await axios.get('https://assignment3-backend.onrender.com/requestNewAccessToken', {
                 headers: {
                     'Authorization': `Refresh ${refreshToken}`
                 }
@@ -34,28 +32,28 @@ function Dashboard({ accessToken, setAccessToken, refreshToken, setViewPokemon }
 
     useEffect(() => {
         async function fetchData() {
-            const uniqueUsers = await axiosJWT.get("http://localhost:3001/getUniqueUsers", {
+            const uniqueUsers = await axiosJWT.get("https://assignment3-backend.onrender.com/getUniqueUsers", {
                 headers: {
                     "Authorization": `Bearer ${accessToken}`
                 }
             })
             setUniqueUsers(uniqueUsers.data.count)
 
-            const topUsers = await axiosJWT.get("http://localhost:3001/topUsers", {
+            const topUsers = await axiosJWT.get("https://assignment3-backend.onrender.com/topUsers", {
                 headers: {
                     "Authorization": `Bearer ${accessToken}`
                 }
             })
             setTopUser({"username": topUsers.data.username, "count": topUsers.data.count})
 
-            const topEndpointUsers = await axiosJWT.get("http://localhost:3001/topUsersByEndpoint", {
+            const topEndpointUsers = await axiosJWT.get("https://assignment3-backend.onrender.com/topUsersByEndpoint", {
                 headers: {
                     "Authorization": `Bearer ${accessToken}`
                 }
             })
             setTopUsersEndpoint(topEndpointUsers.data)
 
-            const errorsGetAll = await axiosJWT.get("http://localhost:3001/errorsByEndpoint", {
+            const errorsGetAll = await axiosJWT.get("https://assignment3-backend.onrender.com/errorsByEndpoint", {
                 headers: {
                     "Authorization": `Bearer ${accessToken}`
                 }

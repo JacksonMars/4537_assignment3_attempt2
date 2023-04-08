@@ -12,7 +12,7 @@ function Login({user, setUser, refreshToken, setRefreshToken, accessToken, setAc
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post("http://localhost:3001/login", { username, password });
+            const res = await axios.post("https://assignment3-backend.onrender.com/login", { username, password });
             setAccessToken(res.headers["auth-token-access"]);
             setRefreshToken(res.headers["auth-token-refresh"]);
             setUser(res.data.user);
@@ -24,7 +24,7 @@ function Login({user, setUser, refreshToken, setRefreshToken, accessToken, setAc
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post("http://localhost:3001/register", { username, password });
+            const res = await axios.post("https://assignment3-backend.onrender.com/register", { username, password });
             setAccessToken(res.headers["auth-token-access"]);
             setRefreshToken(res.headers["auth-token-refresh"]);
             setUser(res.data.user);
@@ -50,14 +50,7 @@ function Login({user, setUser, refreshToken, setRefreshToken, accessToken, setAc
                     <button type="submit">Register</button>
                 </form>
             }
-            {/* {
-                (user?.username) &&
-                <>
-                    <Dashboard accessToken={accessToken} setAccessToken={setAccessToken} refreshToken={refreshToken} />
-                </>
-            } */}
             {
-                // (!user || !user?.username) &&
                 (isLogin) &&
                 <form onSubmit={handleLogin}>
                     <input type="text" placeholder="username" onChange={(e) => setUsername(e.target.value)} />
